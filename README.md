@@ -6,7 +6,7 @@ In brief:
 - Taking a screenshot results in a Journal entry that includes the players position.
 - The app sends F10 presses to the game to trigger screenshots (eg. at a rate of 10 per second).
 - The app watches the game's Journal file and copies screenshot event position data to the Status file.
-- The app deletes the game's screenshot file.
+- The app deletes the screenshot file.
 
 
 ## Use
@@ -31,6 +31,20 @@ Windows Pictures and Saved Games locations are read from the registry, including
 - Screenshots: `Pictures\Frontier Developments\Elite Dangerous`
 
 For custom locations, launch with `--journal-directory "C:\YourJournalFolder"` and/or `--screenshot-directory "C:\YourScreenshotFolder"`. The selected paths are displayed in the window. Missing/unreadable folders are reported in the status line.
+
+### Optional: use a RAM disk for screenshots
+
+If you experience game jitter while this app is running, you could try placing the game's screenshot folder on a RAM disk. This may reduce storage-related delays, but it is not guaranteed to fix jitter. RAM-disk contents are temporary and can be lost when the computer shuts down, so save any screenshots you want to keep elsewhere.
+
+One Windows RAM-disk utility is [aim-toolkit](https://sourceforge.net/projects/aim-toolkit/). Install and configure a RAM disk with a stable drive letter (for example, `R:`) and enough space for screenshots; `32 MB` is only an example and may not be sufficient for every setup. Create a folder on it, such as `R:\EDScreenshots`.
+
+Before changing the folder, close Elite Dangerous and this app, and keep a backup of your existing screenshots. Rename the game's existing screenshot folder (for example, `Elite Dangerous` to `Elite Dangerous - backup`), then open Command Prompt as Administrator and create a directory link from the game's usual screenshot path to the RAM disk:
+
+```cmd
+mklink /D "%USERPROFILE%\Pictures\Frontier Developments\Elite Dangerous" "R:\EDScreenshots"
+```
+
+If your Pictures folder is redirected (for example, into OneDrive) or you use a custom screenshot location, replace the first path with the actual screenshot-folder path. Start the RAM disk before the game so the linked destination exists. Copy any screenshots you want to keep off the RAM disk before shutdown.
 
 ## Publishing positions
 

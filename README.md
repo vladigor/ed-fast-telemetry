@@ -1,8 +1,13 @@
 # ED Fast Telemetry
 
-A standalone Windows app that uses Elite Dangerous screenshots to publish faster planetary positions into `Status.json` for other apps.
+A standalone Windows app that uses Elite Dangerous screenshots to publish faster planetary positions into `Status.json`.
 
-> **AI development disclosure:** The underlying functionality was "vibe-coded" with AI agents. The project owner supplied the idea, requirements, testing feedback and release decisions. This standalone app was adapted with AI assistance. Tests do not prove the software is free of defects. See [AI_DEVELOPMENT.md](AI_DEVELOPMENT.md).
+In brief:
+- Taking a screenshot results in a Journal entry that includes the players position.
+- The app sends F10 presses to the game to trigger screenshots (eg. at a rate of 10 per second).
+- The app watches the game's Journal file and copies screenshot event position data to the Status file.
+- The app deletes the game's screenshot file.
+
 
 ## Use
 

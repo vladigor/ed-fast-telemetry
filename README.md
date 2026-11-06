@@ -1,0 +1,59 @@
+# ED Fast Telemetry
+
+A standalone Windows app that uses Elite Dangerous screenshots to publish faster planetary positions into `Status.json` for other apps.
+
+> **AI development disclosure:** The underlying functionality was "vibe-coded" with AI agents. The project owner supplied the idea, requirements, testing feedback and release decisions. This standalone app was adapted with AI assistance. Tests do not prove the software is free of defects. See [AI_DEVELOPMENT.md](AI_DEVELOPMENT.md).
+
+## Use
+
+1. Open Elite Dangerous and reach a planet surface.
+2. Run `ED-fast-telemetry.exe`. Read the on-screen warnings.
+3. Set **Updates per second** (whole numbers from 1 to 50, default 10). The setting is saved immediately.
+4. Click **Start**, then return focus to the game. F10 presses only happen while `EliteDangerous64.exe` is foreground and Shift, Ctrl, Alt and Windows are not held.
+5. Click **Stop** to stop F10 and status publishing. Screenshot cleanup continues for 15 seconds to catch delayed writes. Closing does a final cleanup pass and releases F10.
+
+The status line shows F10 presses sent, actual presses and screenshots per second, key-send duration, screenshots read/deleted, status updates/skips/failures, pending deletes and errors. Actual updates can be slower than requested because of timers, frame rate, modifier keys or game-side limits.
+
+## Screenshot management and safety
+
+Every ordinary F10 screenshot taken while running, including manual ones, is deleted. Files named by live Screenshot journal events are deleted promptly on a background thread. Every two seconds the app also sweeps `Screenshot_<number>.bmp` files modified since starting (with a two-second timestamp tolerance), ignoring files modified within the last second. Older screenshots, hi-res `HighResScreenShot_*` files and other files are kept.
+
+Locked files are retried for up to 30 seconds. Disable software that watches, converts or uploads screenshots before starting. Other applications with F10 hotkeys may react too. Pressing a modifier during a brief F10 hold can still cause a modified screenshot.
+
+Windows Pictures and Saved Games locations are read from the registry, including relocated folders. Defaults:
+
+- Journal and status: `Saved Games\Frontier Developments\Elite Dangerous`
+- Screenshots: `Pictures\Frontier Developments\Elite Dangerous`
+
+For custom locations, launch with `--journal-directory "C:\YourJournalFolder"` and/or `--screenshot-directory "C:\YourScreenshotFolder"`. The selected paths are displayed in the window. Missing/unreadable folders are reported in the status line.
+
+## Publishing positions
+
+The app watches the latest `Journal.*.log`, with fallback polling. Start reads recent history for system context but never publishes or deletes historical screenshot events. Partial journal lines are deferred until complete; new journals and truncation are handled.
+
+For each read, the latest eligible planetary Screenshot event supplies `timestamp`, `Latitude`, `Longitude`, and any supplied `Heading` and `Altitude`. Missing altitude/heading and every other status field are preserved. The event must be at least as new as the status timestamp and match its body and the current journal system; the status Has Lat/Long flag must be set. Events invalidated by a subsequent body departure/jump are not published.
+
+Status updates replace the file atomically. A reader watching only the original file handle may need to reattach its watcher after replacement. Detected concurrent game writes are skipped, but **Elite and this app do not share a lock protocol, so a small write-conflict risk remains**. Whole-second timestamps do not increase in value for every high-frequency update; apps should watch file changes and coordinates.
+
+## Develop, test and build
+
+Everything needed lives in this directory; it can be moved into a separate repository.
+On Windows, from this directory:
+
+```powershell
+py -3.13 -m venv venv
+.\venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\venv\Scripts\python.exe launcher.py
+.\venv\Scripts\python.exe -m pytest -q
+.\build.ps1
+```
+
+The build produces a single windowed executable under `dist`, using PyInstaller. It uses only this folder's `venv`, never a parent environment. `.\build.ps1 -Name "CustomName"` overrides the executable name.
+
+Linux can run the offscreen tests (`QT_QPA_PLATFORM=offscreen python3 -m pytest -q`), but actual Win32 input and the Windows executable must be tested on Windows.
+
+## Versions
+
+Versions use `major.minor.patch`. This first development iteration is `0.1.0.dev0`, displayed as `0.1.0-dev`; a release becomes `0.1.0`. Update both [pyproject.toml](pyproject.toml) and [__init__.py](src/ed_fast_telemetry/__init__.py) together. The executable name is derived automatically from the runtime version.
+
+This unofficial community app is not affiliated with or endorsed by Frontier Developments, Elite Dangerous or EDCoPilot. MIT licensed; retained attribution for reused code is in [LICENSE](LICENSE).

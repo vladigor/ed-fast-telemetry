@@ -1,0 +1,12 @@
+venv/
+.tmp*/
+.pip-cache/
+.pytest_cache/
+pytest-cache-files-*/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+RELEASING.md
+tools/generate_readme_screenshots.py
